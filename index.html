@@ -2,88 +2,156 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Resultado da Análise</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI HR Analytics - Análise de Currículos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* Reset básico */
-    * {
-      box-sizing: border-box;
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
     }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      color: #f0f0f0;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      text-align: center;
+    
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
     }
-
-    h1 {
-      font-weight: 700;
-      margin-bottom: 1rem;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-size: 2.5rem;
-    }
-
-    #resultado {
-      background: rgba(255, 255, 255, 0.15);
-      padding: 30px 25px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-      font-size: 1.2rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      max-width: 700px;
-      min-height: 150px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s ease;
-    }
-
-    #resultado.loading {
-      font-style: italic;
-      color: #ddd;
-    }
-
-    #resultado.error {
-      color: #ff6b6b;
-      font-weight: 700;
-    }
-
-    /* Responsividade */
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-      #resultado {
-        font-size: 1rem;
-        padding: 20px;
-      }
+    
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-glow { animation: glow 2s ease-in-out infinite alternate; }
+    
+    .gradient-text {
+      background: linear-gradient(45deg, #06b6d4, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
   </style>
 </head>
-<body>
-  <h1>Resultado da Comparação de Currículos</h1>
-  <div id="resultado" class="loading">Carregando...</div>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+  
+  <!-- Animated Background Elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+    <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-pulse"></div>
+  </div>
+
+  <!-- Grid Pattern Overlay -->
+  <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+
+  <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 text-center">
+    
+    <!-- Header Section -->
+    <div class="mb-12 space-y-6">
+      <div class="flex items-center justify-center space-x-4 mb-6">
+        <div class="p-3 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-full backdrop-blur-xl border border-white/20 animate-float">
+          <i class="fas fa-brain w-8 h-8 text-cyan-400"></i>
+        </div>
+        <div class="p-3 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-full backdrop-blur-xl border border-white/20 animate-float" style="animation-delay: 2s;">
+          <i class="fas fa-users w-8 h-8 text-emerald-400"></i>
+        </div>
+        <div class="p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full backdrop-blur-xl border border-white/20 animate-float" style="animation-delay: 4s;">
+          <i class="fas fa-sparkles w-8 h-8 text-pink-400"></i>
+        </div>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-bold gradient-text animate-pulse">
+        AI HR Analytics
+      </h1>
+      
+      <p class="text-xl md:text-2xl text-gray-300 font-light tracking-wide">
+        Análise Inteligente de Currículos
+      </p>
+
+      <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
+        <span>ID da Análise:</span>
+        <code id="idDisplay" class="px-3 py-1 bg-white/10 rounded-full font-mono text-cyan-300">
+          Não especificado
+        </code>
+      </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="mb-8 flex items-center space-x-3">
+      <div id="statusIcon" class="p-2 rounded-full transition-all duration-300 bg-blue-500/20 text-blue-400">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <span id="statusText" class="text-lg font-medium">Processando...</span>
+    </div>
+
+    <!-- Result Container -->
+    <div id="resultado" class="relative backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl text-lg leading-relaxed whitespace-pre-wrap max-w-4xl min-h-[200px] flex items-center justify-center transition-all duration-500 hover:scale-[1.02] hover:shadow-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-blue-100 animate-pulse">
+      
+      <!-- Decorative corner elements -->
+      <div class="absolute top-4 left-4 w-3 h-3 border-l-2 border-t-2 border-cyan-400/50"></div>
+      <div class="absolute top-4 right-4 w-3 h-3 border-r-2 border-t-2 border-cyan-400/50"></div>
+      <div class="absolute bottom-4 left-4 w-3 h-3 border-l-2 border-b-2 border-cyan-400/50"></div>
+      <div class="absolute bottom-4 right-4 w-3 h-3 border-r-2 border-b-2 border-cyan-400/50"></div>
+      
+      <div class="relative z-10 text-center max-w-3xl">
+        Carregando análise...
+      </div>
+    </div>
+
+    <!-- Footer Tech Info -->
+    <div class="mt-12 text-center space-y-2">
+      <div class="flex items-center justify-center space-x-4 text-xs text-gray-500">
+        <span>◦ Machine Learning</span>
+        <span>◦ Natural Language Processing</span>
+        <span>◦ Predictive Analytics</span>
+      </div>
+      <p class="text-xs text-gray-600">
+        Powered by Advanced AI • Real-time Processing • Secure Analysis
+      </p>
+    </div>
+  </div>
 
   <script>
     const resultadoEl = document.getElementById('resultado');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+    const idDisplay = document.getElementById('idDisplay');
 
-    // Pega o id da URL, ex: ?id=12
+    // Pega o id da URL
     const params = new URLSearchParams(window.location.search);
     const idBusca = params.get('id');
 
+    // Atualiza o display do ID
+    idDisplay.textContent = idBusca || 'Não especificado';
+
+    function updateStatus(status, message) {
+      statusText.textContent = message;
+      
+      if (status === 'loading') {
+        statusIcon.className = 'p-2 rounded-full transition-all duration-300 bg-blue-500/20 text-blue-400';
+        statusIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      } else if (status === 'error') {
+        statusIcon.className = 'p-2 rounded-full transition-all duration-300 bg-red-500/20 text-red-400';
+        statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+      } else {
+        statusIcon.className = 'p-2 rounded-full transition-all duration-300 bg-emerald-500/20 text-emerald-400';
+        statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      }
+    }
+
+    function updateResult(status, content) {
+      const baseClasses = "relative backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl text-lg leading-relaxed whitespace-pre-wrap max-w-4xl min-h-[200px] flex items-center justify-center transition-all duration-500 hover:scale-[1.02] hover:shadow-3xl";
+      
+      if (status === 'loading') {
+        resultadoEl.className = `${baseClasses} bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-blue-100 animate-pulse`;
+      } else if (status === 'error') {
+        resultadoEl.className = `${baseClasses} bg-gradient-to-br from-red-500/20 to-pink-500/20 text-red-200 border-red-300/30`;
+      } else {
+        resultadoEl.className = `${baseClasses} bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-white border-emerald-300/30`;
+      }
+      
+      resultadoEl.querySelector('.relative.z-10').textContent = content;
+    }
+
     if (!idBusca) {
-      resultadoEl.textContent = "ID inválido.";
-      resultadoEl.classList.remove('loading');
-      resultadoEl.classList.add('error');
+      updateStatus('error', 'Erro na Análise');
+      updateResult('error', "ID de análise inválido.");
     } else {
       fetch('https://docs.google.com/spreadsheets/d/11eBRJ7tLXk6suGQsRLfhH-woMEVtJ8_ZKxqag1GpooI/gviz/tq?tqx=out:json')
         .then(response => response.text())
@@ -91,21 +159,21 @@
           const jsonData = JSON.parse(dataText.substring(47, dataText.length - 2));
           const rows = jsonData.table.rows;
 
-          const resultado = rows.find(row => row.c[0] && row.c[0].v.toString() === idBusca);
+          const resultadoEncontrado = rows.find(row => 
+            row.c[0] && row.c[0].v.toString() === idBusca
+          );
 
-          if (resultado && resultado.c[3]) {
-            resultadoEl.textContent = resultado.c[3].v;
-            resultadoEl.classList.remove('loading', 'error');
+          if (resultadoEncontrado && resultadoEncontrado.c[3]) {
+            updateStatus('success', 'Análise Concluída');
+            updateResult('success', resultadoEncontrado.c[3].v);
           } else {
-            resultadoEl.textContent = "Resultado não encontrado.";
-            resultadoEl.classList.remove('loading');
-            resultadoEl.classList.add('error');
+            updateStatus('error', 'Erro na Análise');
+            updateResult('error', "Análise não encontrada no sistema.");
           }
         })
         .catch(() => {
-          resultadoEl.textContent = "Erro ao carregar o resultado.";
-          resultadoEl.classList.remove('loading');
-          resultadoEl.classList.add('error');
+          updateStatus('error', 'Erro na Análise');
+          updateResult('error', "Erro na conexão com o sistema de análise.");
         });
     }
   </script>
