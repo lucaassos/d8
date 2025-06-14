@@ -1,45 +1,114 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Resultado da Análise</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 40px; }
-  #resultado { white-space: pre-wrap; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Resultado da Análise</title>
+  <style>
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 2.5rem;
+    }
+
+    #resultado {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 30px 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      font-size: 1.2rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      max-width: 700px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+    }
+
+    #resultado.loading {
+      font-style: italic;
+      color: #ddd;
+    }
+
+    #resultado.error {
+      color: #ff6b6b;
+      font-weight: 700;
+    }
+
+    /* Responsividade */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      #resultado {
+        font-size: 1rem;
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
   <h1>Resultado da Comparação de Currículos</h1>
-  <div id="resultado">Carregando...</div>
+  <div id="resultado" class="loading">Carregando...</div>
 
   <script>
+    const resultadoEl = document.getElementById('resultado');
+
     // Pega o id da URL, ex: ?id=12
     const params = new URLSearchParams(window.location.search);
     const idBusca = params.get('id');
 
     if (!idBusca) {
-      document.getElementById('resultado').textContent = "ID inválido.";
+      resultadoEl.textContent = "ID inválido.";
+      resultadoEl.classList.remove('loading');
+      resultadoEl.classList.add('error');
     } else {
       fetch('https://docs.google.com/spreadsheets/d/11eBRJ7tLXk6suGQsRLfhH-woMEVtJ8_ZKxqag1GpooI/gviz/tq?tqx=out:json')
         .then(response => response.text())
         .then(dataText => {
-          // Extrai o JSON da resposta
           const jsonData = JSON.parse(dataText.substring(47, dataText.length - 2));
           const rows = jsonData.table.rows;
 
-          // Procura pela linha com ID igual ao idBusca
           const resultado = rows.find(row => row.c[0] && row.c[0].v.toString() === idBusca);
 
           if (resultado && resultado.c[3]) {
-            document.getElementById('resultado').textContent = resultado.c[3].v;
+            resultadoEl.textContent = resultado.c[3].v;
+            resultadoEl.classList.remove('loading', 'error');
           } else {
-            document.getElementById('resultado').textContent = "Resultado não encontrado.";
+            resultadoEl.textContent = "Resultado não encontrado.";
+            resultadoEl.classList.remove('loading');
+            resultadoEl.classList.add('error');
           }
         })
         .catch(() => {
-          document.getElementById('resultado').textContent = "Erro ao carregar o resultado.";
+          resultadoEl.textContent = "Erro ao carregar o resultado.";
+          resultadoEl.classList.remove('loading');
+          resultadoEl.classList.add('error');
         });
     }
   </script>
 </body>
 </html>
+
