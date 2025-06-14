@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Resultado da Análise</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; }
+  #resultado { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+  <h1>Resultado da Comparação de Currículos</h1>
+  <div id="resultado">Carregando...</div>
+
+  <script>
+    // Pega o id da URL, ex: ?id=12
+    const params = new URLSearchParams(window.location.search);
+    const idBusca = params.get('id');
+
+    if (!idBusca) {
+      document.getElementById('resultado').textContent = "ID inválido.";
+    } else {
+      fetch('https://docs.google.com/spreadsheets/d/11eBRJ7tLXk6suGQsRLfhH-woMEVtJ8_ZKxqag1GpooI/gviz/tq?tqx=out:json')
+        .then(response => response.text())
+        .then(dataText => {
+          // Extrai o JSON da resposta
+          const jsonData = JSON.parse(dataText.substring(47, dataText.length - 2));
+          const rows = jsonData.table.rows;
+
+          // Procura pela linha com ID igual ao idBusca
+          const resultado = rows.find(row => row.c[0] && row.c[0].v.toString() === idBusca);
+
+          if (resultado && resultado.c[3]) {
+            document.getElementById('resultado').textContent = resultado.c[3].v;
+          } else {
+            document.getElementById('resultado').textContent = "Resultado não encontrado.";
+          }
+        })
+        .catch(() => {
+          document.getElementById('resultado').textContent = "Erro ao carregar o resultado.";
+        });
+    }
+  </script>
+</body>
+</html>
